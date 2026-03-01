@@ -1,59 +1,130 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-commerce Order Flow Demo
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel web app for a simple e-commerce flow: browse products, add to cart, place an order, and let an admin refund it.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2 / Laravel 12
+- Breeze (authentication)
+- Tailwind CSS
+- MySQL / SQLite
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation & Setup
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+git clone <repo-url>
+cd ecommerce-demo
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+npm install
+npm run build
+php artisan serve
+```
 
-## Learning Laravel
+The app will be available at `http://localhost:8000`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+For development with live reloading, replace `npm run build` with `npm run dev` and keep it running alongside `php artisan serve`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Seeded Accounts
 
-## Laravel Sponsors
+All accounts use the password: `password`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Role  | Email               |
+|-------|---------------------|
+| Admin | admin@ecommerce.com |
+| User  | user1@ecommerce.com |
+| User  | user2@ecommerce.com |
 
-### Premium Partners
+## Pages
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Customer (requires login)
 
-## Contributing
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/products` | Browse products with stock status |
+| GET | `/cart` | View cart and total |
+| POST | `/cart/items/{product}` | Add product to cart |
+| POST | `/orders` | Place order (cash on delivery) |
+| GET | `/orders` | Order history |
+| GET | `/orders/{order}` | Order detail |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Admin (requires admin account)
 
-## Code of Conduct
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `/admin/orders` | List all orders |
+| GET | `/admin/orders/{order}` | Order detail |
+| POST | `/admin/orders/{order}/refund` | Refund an order |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Architecture Overview
 
-## Security Vulnerabilities
+Every request goes through the same layers:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```
+HTTP Request
+     │
+     ├── Gate ──────────── checks is_admin for admin routes
+     │
+FormRequest ───────────── validates fields (rules)
+     │                    validates business rules (after)
+     │
+Controller ────────────── delegates only, no logic
+     │
+Service ───────────────── all business logic
+     │    CartService:  add to cart, get cart items
+     │    OrderService: place order, refund, list orders
+     │
+Model ─────────────────── relationships + computed attributes
+     │    Cart/CartItem:    total_price computed (not stored)
+     │    Order/OrderItem:  total_price stored (price snapshot)
+     │
+  Database
+```
 
-## License
+## Architecture Decisions
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Service classes for business logic
+
+Controllers only call a service method and return a response. All the actual logic (creating an order, validating stock, processing a refund) lives in `CartService` and `OrderService`. This keeps controllers easy to read and makes the logic easy to find.
+
+### FormRequests for all validation
+
+Every action that needs validation has its own FormRequest class. For simple field rules I use `rules()`. For checks that need the database (like "is this order already refunded?") I use the `after()` callback — it runs after field validation passes, so I can add errors without throwing exceptions.
+
+### Computed vs stored `total_price`
+
+Cart and cart item totals are computed on the fly (`quantity × price`) and never stored in the database. There's no point saving a number that can always be recalculated from the source.
+
+Order and order item totals are stored. Once an order is placed, the prices shouldn't change even if the product price changes later.
+
+### Stock validation is cumulative
+
+When adding to cart, the validation checks `existing cart quantity + new quantity ≤ stock`. A simple `max` rule would let someone add 5 items twice and end up with 10, bypassing the stock limit. The `SufficientStockRule` prevents that.
+
+### Authentication via Laravel Breeze
+
+I used Breeze to handle all authentication out of the box — registration, login, logout, email verification, and the profile page. It generates the routes, controllers, views, and middleware needed for a full auth flow, so I didn't have to write any of that manually.
+
+The only addition I made on top of Breeze is the `is_admin` flag on the users table. I didn't build a separate admin auth system — the same login page is used for everyone, and the admin check happens after login.
+
+### Admin access via Laravel Gate
+
+I defined a single `admin` gate in `AppServiceProvider` that checks `$user->is_admin`. The admin routes use `can:admin` middleware and the refund request checks it in `authorize()`. This keeps authorization in one place instead of spreading it across controllers.
+
+## Business Rules
+
+- Only logged-in users can add to cart or place orders
+- Adding to cart respects cumulative stock (cart quantity + request quantity must not exceed stock)
+- Unit price is captured at order time — changing the product price later doesn't affect existing orders
+- Refunding an order restores the stock for all items
+- An order can only be refunded once
+
+## Assumptions
+
+- Payment method is cash on delivery — no payment gateway integration
+- Cart items can't be edited or removed after being added
+- Prices are stored as whole numbers (no cents)
+- No concurrency locking — stock could go negative under very high simultaneous traffic
+- This is a demo task, so no emails, no pagination, no soft deletes
