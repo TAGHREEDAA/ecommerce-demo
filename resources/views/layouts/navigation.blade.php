@@ -18,6 +18,21 @@
                 </div>
             </div>
 
+            <!-- Cart Icon -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6h11" />
+                    </svg>
+                    @php($cartCount = Auth::user()->cart?->items()->sum('quantity') ?? 0)
+                    @if($cartCount > 0)
+                        <span class="absolute -top-1.5 -right-1.5 bg-gray-800 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                            {{ $cartCount }}
+                        </span>
+                    @endif
+                </a>
+            </div>
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -69,6 +84,13 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
+                {{ __('Cart') }}
+                @php($cartCount = Auth::user()->cart?->items()->sum('quantity') ?? 0)
+                @if($cartCount > 0)
+                    <span class="ms-1 bg-gray-800 text-white text-xs rounded-full px-1.5 py-0.5">{{ $cartCount > 9 ? '9+' : $cartCount }}</span>
+                @endif
             </x-responsive-nav-link>
         </div>
 

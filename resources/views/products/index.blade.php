@@ -23,7 +23,7 @@
 
                     @auth
                         @if($product->stock_quantity > 0)
-                            <form action="#" method="POST" class="flex gap-2">
+                            <form action="{{ route('cart.items.store', $product) }}" method="POST" class="flex gap-2">
                                 @csrf
                                 <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock_quantity }}" class="w-14 border rounded px-2 text-sm">
                                 <button class="flex-1 bg-gray-800 text-white text-sm rounded px-3 py-1 hover:bg-gray-700">Add to cart</button>
