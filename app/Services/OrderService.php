@@ -16,6 +16,11 @@ class OrderService
         return $user->orders()->latest()->get();
     }
 
+    public function listAll(): Collection
+    {
+        return Order::with('user')->latest()->get();
+    }
+
     public function placeOrder(User $user): Order
     {
         /** @var Cart $cart */
