@@ -12,7 +12,7 @@ A Laravel web app for a simple e-commerce flow: browse products, add to cart, pl
 ## Installation & Setup
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:TAGHREEDAA/ecommerce-demo.git
 cd ecommerce-demo
 composer install
 cp .env.example .env
