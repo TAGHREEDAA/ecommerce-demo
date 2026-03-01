@@ -21,6 +21,19 @@ class OrderService
         return Order::with('user')->latest()->get();
     }
 
+    public function refund(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order->load('items.product');
+
+            foreach ($order->items as $item) {
+                $item->product->restoreStock($item->quantity);
+            }
+
+            $order->update(['status' => OrderStatus::Refunded]);
+        });
+    }
+
     public function placeOrder(User $user): Order
     {
         /** @var Cart $cart */

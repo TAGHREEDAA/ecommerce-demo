@@ -30,7 +30,9 @@
                 <tbody>
                     @foreach($orders as $order)
                         <tr class="border-b">
-                            <td class="py-3">#{{ $order->id }}</td>
+                            <td class="py-3">
+                                <a href="{{ route('admin.orders.show', $order) }}" class="underline hover:text-gray-600">#{{ $order->id }}</a>
+                            </td>
                             <td class="py-3">{{ $order->user->name }}</td>
                             <td class="py-3 capitalize">{{ $order->status->value }}</td>
                             <td class="py-3 text-right">${{ number_format($order->total_price, 2) }}</td>
@@ -39,7 +41,6 @@
                                 @if(!$order->isRefunded())
                                     <form action="{{ route('admin.orders.refund', $order) }}" method="POST">
                                         @csrf
-                                        @method('PATCH')
                                         <button class="text-red-600 hover:underline text-xs">Refund</button>
                                     </form>
                                 @else

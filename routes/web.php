@@ -19,8 +19,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 });
 
-Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+Route::middleware(['auth', 'can:admin'])->prefix('admin')->name('admin.orders.')->group(function () {
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('index');
+    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('show');
+    Route::post('/orders/{order}/refund', [AdminOrderController::class, 'refund'])->name('refund');
 });
 
 require __DIR__.'/auth.php';
