@@ -18,6 +18,28 @@
                 </div>
             </div>
 
+            <!-- My Orders -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <a href="{{ route('orders.index') }}" class="flex items-center gap-1.5 text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span class="text-sm">My Orders</span>
+                </a>
+            </div>
+
+            <!-- All Orders (admin only) -->
+            @can('admin')
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <a href="{{ route('admin.orders.index') }}" class="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                    <span class="text-sm font-medium">All Orders</span>
+                </a>
+            </div>
+            @endcan
+
             <!-- Cart Icon -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <a href="{{ route('cart.index') }}" class="relative text-gray-500 hover:text-gray-700">
@@ -85,6 +107,14 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.index')">
+                {{ __('My Orders') }}
+            </x-responsive-nav-link>
+            @can('admin')
+            <x-responsive-nav-link :href="route('admin.orders.index')" :active="request()->routeIs('admin.orders.*')" class="text-indigo-600">
+                {{ __('All Orders') }}
+            </x-responsive-nav-link>
+            @endcan
             <x-responsive-nav-link :href="route('cart.index')" :active="request()->routeIs('cart.index')">
                 {{ __('Cart') }}
                 @php($cartCount = Auth::user()->cart?->items()->sum('quantity') ?? 0)
