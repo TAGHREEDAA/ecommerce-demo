@@ -13,6 +13,14 @@
             <p class="mb-6 text-red-600">{{ session('error') }}</p>
         @endif
 
+        @if($errors->any())
+            <ul class="mb-6 text-red-600 text-sm space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        @endif
+
         @if($cartItems->isEmpty())
             <p class="text-gray-500">Your cart is empty. <a href="{{ route('dashboard') }}" class="underline">Browse products</a></p>
         @else
@@ -40,6 +48,15 @@
                     </tr>
                 </tfoot>
             </table>
+
+            <div class="mt-6 flex justify-end">
+                <form action="{{ route('orders.store') }}" method="POST">
+                    @csrf
+                    <button class="bg-gray-800 text-white text-sm rounded px-6 py-2 hover:bg-gray-700">
+                        Place Order — Cash on Delivery
+                    </button>
+                </form>
+            </div>
         @endif
     </div>
 </x-app-layout>

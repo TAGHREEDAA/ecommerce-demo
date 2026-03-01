@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Contracts\CartServiceInterface;
 use App\Models\User;
-use App\Services\CartService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,7 +10,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(CartServiceInterface::class, CartService::class);
+        //
     }
 
     /**

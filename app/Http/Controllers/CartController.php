@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\CartServiceInterface;
 use App\Http\Requests\StoreCartItemRequest;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    public function __construct(private CartServiceInterface $cartService) {}
+    public function __construct(private CartService $cartService) {}
 
     public function index(): View
     {

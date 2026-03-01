@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Contracts\CartServiceInterface;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
-class CartService implements CartServiceInterface
+class CartService
 {
     public function getOrCreateCart(User $user): Cart
     {
